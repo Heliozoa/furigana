@@ -338,6 +338,7 @@ fn kana_equivalent(left: &str, right: &str) -> bool {
     left.chars().count() == right.chars().count()
 }
 
+// checks if the next char can be an "extension" of the previous char the same way ー is used for katakana.
 fn is_extension(previous: char, next: char) -> bool {
     match (previous, next) {
         ('あ' | 'か' | 'さ' | 'た' | 'な' | 'は' | 'ま', 'あ' | 'ア') => true,

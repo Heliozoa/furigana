@@ -1,7 +1,7 @@
 //! Contains iterators that segment a Japanese word.
 
 /// Segment of a Japanese word.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Segment<'a> {
     Kana(&'a str),
     Kanji(&'a str),
@@ -25,7 +25,7 @@ impl<'a> Segment<'a> {
 
 /// Iterator over a word's sequences of kanji and kana.
 /// Differs from `FineSegmentation` in that sequences of kanji are considered single segments.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CoarseSegmentation<'a> {
     rest: &'a str,
 }
@@ -94,7 +94,7 @@ impl<'a> Iterator for CoarseSegmentation<'a> {
 
 /// Iterator over a word's kanji and sequences of kana.
 /// Differs from `CoarseSegmentation` in that each kanji is its own segment.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FineSegmentation<'a> {
     rest: &'a str,
 }
@@ -152,7 +152,7 @@ impl<'a> Iterator for FineSegmentation<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Char {
     Kanji,
     Kana,

@@ -1,8 +1,8 @@
+use crate::{kana_equivalent, segmentation::Segment};
 use std::fmt::Display;
 
-use crate::{kana_equivalent, segmentation::Segment};
-
-#[derive(Debug)]
+/// A mapping of furigana to a word.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Furigana<'a> {
     /// The original word with furigana.
     pub furigana: Vec<FuriganaSegment<'a>>,
@@ -62,6 +62,7 @@ impl<'a> Furigana<'a> {
     }
 }
 
+/// Prints the word with its furigana using HTML ruby tags.
 impl Display for Furigana<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "<ruby>")?;
@@ -78,20 +79,22 @@ impl Display for Furigana<'_> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FuriganaSegment<'a> {
+    /// A segment of the original word.
     pub segment: &'a str,
+    /// The furigana corresponding to the segment, if any.
     pub furigana: Option<&'a str>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FuriganaTree<'a> {
     pub word: &'a str,
     pub reading: &'a str,
     pub nodes: Vec<FuriganaNode<'a>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FuriganaNode<'a> {
     /// The corresponding segment from the original word.
     pub segment: Segment<'a>,
@@ -99,10 +102,12 @@ pub struct FuriganaNode<'a> {
     pub reading: &'a str,
     /// Possible ways to continue after this point.
     pub extensions: Vec<FuriganaNode<'a>>,
+    /// The accuracy of this reading according to known kanji readings. None when inapplicable, such as for kana segments.
     pub kanji_accurate: Option<KanjiAccuracy>,
 }
 
-#[derive(Debug)]
+/// The accuracy of a given reading for a kanji.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum KanjiAccuracy {
     Accurate,
     AccurateWithRendaku,
