@@ -1,0 +1,16 @@
+[package]
+name = "furigana"
+version = "0.1.0"
+authors = ["Heliozoa <daniel.x.martinez@helsinki.fi>"]
+edition = "2021"
+rust-version = "1.56"
+description = "Map furigana to a word given its reading."
+readme = "README.md"
+repository = "https://github.com/Heliozoa/furigana"
+license = "MPL-2.0"
+keywords = ["japanese"]
+categories = ["text-processing"]
+resolver = "2"
+
+[dependencies]
+wana_kana = "2.1.0"
