@@ -206,7 +206,7 @@ where
                         map_inner(segments_rest, reading_rest, kanji_to_readings, None, true)?;
                     return Some(vec![FuriganaNode {
                         segment,
-                        reading: *alpha_reading,
+                        reading: alpha_reading,
                         extensions,
                         kanji_accurate: None,
                     }]);
@@ -340,14 +340,14 @@ fn kana_equivalent(left: &str, right: &str) -> bool {
 
 // checks if the next char can be an "extension" of the previous char the same way ー is used for katakana.
 fn is_extension(previous: char, next: char) -> bool {
-    match (previous, next) {
-        ('あ' | 'か' | 'さ' | 'た' | 'な' | 'は' | 'ま', 'あ' | 'ア') => true,
-        ('い' | 'き' | 'し' | 'ち' | 'に' | 'ひ' | 'み', 'い' | 'イ') => true,
-        ('う' | 'く' | 'す' | 'つ' | 'ぬ' | 'ふ' | 'む', 'う' | 'ウ') => true,
-        ('え' | 'け' | 'せ' | 'て' | 'ね' | 'へ' | 'め', 'え' | 'エ') => true,
-        ('お' | 'こ' | 'そ' | 'と' | 'の' | 'ほ' | 'も', 'お' | 'オ') => true,
-        _ => false,
-    }
+    matches!(
+        (previous, next),
+        ('あ' | 'か' | 'さ' | 'た' | 'な' | 'は' | 'ま', 'あ' | 'ア')
+            | ('い' | 'き' | 'し' | 'ち' | 'に' | 'ひ' | 'み', 'い' | 'イ')
+            | ('う' | 'く' | 'す' | 'つ' | 'ぬ' | 'ふ' | 'む', 'う' | 'ウ')
+            | ('え' | 'け' | 'せ' | 'て' | 'ね' | 'へ' | 'め', 'え' | 'エ')
+            | ('お' | 'こ' | 'そ' | 'と' | 'の' | 'ほ' | 'も', 'お' | 'オ')
+    )
 }
 
 // checks if the actual reading could be the "ideal" reading (according to kanji reading info) with rendaku
@@ -412,10 +412,7 @@ fn sokuonbin_equivalent(ideal_reading: &str, actual_reading: &str) -> bool {
     let last_chars_sokuonbin_accurate = if ideal_char == actual_char {
         true
     } else {
-        match (ideal_char, actual_char) {
-            ('く' | 'ち' | 'つ', 'っ') => true,
-            _ => false,
-        }
+        matches!((ideal_char, actual_char), ('く' | 'ち' | 'つ', 'っ'))
     };
     last_chars_sokuonbin_accurate
         && kana_equivalent(
