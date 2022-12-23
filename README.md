@@ -1,5 +1,10 @@
 # furigana
 
+[![Crates.io](https://img.shields.io/crates/v/furigana)](https://crates.io/crates/furigana)
+[![docs.rs](https://img.shields.io/badge/docs.rs-furigana-success)](https://docs.rs/furigana)
+[![Crates.io](https://img.shields.io/crates/l/furigana)](https://choosealicense.com/licenses/mpl-2.0/)
+[![GitHub](https://img.shields.io/badge/GitHub-Heliozoa-24292f)](https://github.com/Heliozoa/furigana)
+
 `furigana` is a Rust library that contains functionality for correctly mapping furigana to a word given a reading, and optionally kanji reading data.
 
 ## Usage
