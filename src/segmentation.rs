@@ -1,5 +1,7 @@
 //! Contains iterators that segment a Japanese word.
 
+use crate::utils;
+
 /// Segment of a Japanese word.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Segment<'a> {
@@ -125,7 +127,7 @@ impl<'a> Iterator for FineSegmentation<'a> {
                 Some(Segment::Kanji(next))
             }
             Char::Kana => {
-                let next = if let Some(idx) = self.rest.find(is_kanji) {
+                let next = if let Some(idx) = self.rest.find(utils::is_kanji) {
                     let next = &self.rest[..idx];
                     self.rest = &self.rest[idx..];
                     next
@@ -164,43 +166,15 @@ enum Char {
 fn classify_char(c: char) -> Char {
     if c == 'ヶ' {
         Char::Exception
-    } else if is_kanji(c) {
+    } else if utils::is_kanji(c) {
         Char::Kanji
-    } else if is_kana(c) {
+    } else if utils::is_kana(c) {
         Char::Kana
-    } else if is_alphanumeric(c) {
+    } else if utils::is_alphanumeric(c) {
         Char::Alphanumeric
     } else {
         Char::Other
     }
-}
-
-fn is_alphanumeric(c: char) -> bool {
-    c.is_ascii_alphanumeric() || is_fullwidth(c) || is_halfwidth(c)
-}
-
-fn is_fullwidth(c: char) -> bool {
-    (0xFF10..=0xFF19).contains(&(c as u32)) || (0xFF21..=0xFF3A).contains(&(c as u32))
-}
-
-fn is_halfwidth(c: char) -> bool {
-    (0xFF41..=0xFF5A).contains(&(c as u32))
-}
-
-fn is_hiragana(c: char) -> bool {
-    (0x3041..=0x309F).contains(&(c as u32))
-}
-
-fn is_katakana(c: char) -> bool {
-    (0x30A1..=0x30FF).contains(&(c as u32))
-}
-
-fn is_kana(c: char) -> bool {
-    is_hiragana(c) || is_katakana(c)
-}
-
-fn is_kanji(c: char) -> bool {
-    (0x4E00..=0x9FFF).contains(&(c as u32))
 }
 
 #[cfg(test)]

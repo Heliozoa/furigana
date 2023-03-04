@@ -2,6 +2,7 @@
 
 mod furigana;
 mod segmentation;
+mod utils;
 
 pub use self::furigana::{Furigana, FuriganaNode, FuriganaSegment};
 use self::furigana::{FuriganaTree, KanjiAccuracy};
@@ -12,7 +13,7 @@ use std::{collections::HashMap, iter::Peekable};
 /// Returns an empty list if the segments and readings are impossible to match.
 pub fn map_naive<'a>(word: &'a str, reading: &'a str) -> Vec<Furigana<'a>> {
     // no need to do work for kana words
-    if wana_kana::is_kana::is_kana(word) {
+    if word.chars().all(utils::is_kana) {
         return vec![Furigana {
             accuracy: 1,
             furigana: vec![FuriganaSegment {
@@ -52,7 +53,7 @@ pub fn map<'a>(
     kanji_to_readings: &HashMap<String, Vec<String>>,
 ) -> Vec<Furigana<'a>> {
     // no need to do work for kana words
-    if wana_kana::is_kana::is_kana(word) {
+    if word.chars().all(utils::is_kana) {
         return vec![Furigana {
             accuracy: 1,
             furigana: vec![FuriganaSegment {

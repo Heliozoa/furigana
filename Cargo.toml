@@ -11,6 +11,3 @@ license = "MPL-2.0"
 keywords = ["japanese"]
 categories = ["text-processing"]
 resolver = "2"
-
-[dependencies]
-wana_kana = "2.1.0"
