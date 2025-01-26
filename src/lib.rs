@@ -159,7 +159,7 @@ where
             }
             Some(nodes)
         }
-        Some(segment @ Segment::Alphanumeric(alpha)) => {
+        Some(segment @ Segment::Alphabetic(alpha)) => {
             let alpha_readings: &[&str] = match alpha {
                 "A" | "a" | "Ａ" | "ａ" => &["エー"],
                 "B" | "b" | "Ｂ" | "ｂ" => &["ビー"],
@@ -187,17 +187,7 @@ where
                 "X" | "x" | "Ｘ" | "ｘ" => &["エックス"],
                 "Y" | "y" | "Ｙ" | "ｙ" => &["ワイ"],
                 "Z" | "z" | "Ｚ" | "ｚ" => &["ゼット"],
-                "0" | "０" => &["ぜろ", "れい"],
-                "1" | "１" => &["いち"],
-                "2" | "２" => &["に"],
-                "3" | "３" => &["さん"],
-                "4" | "４" => &["よん"],
-                "5" | "５" => &["ご"],
-                "6" | "６" => &["ろく"],
-                "7" | "７" => &["しち", "なな"],
-                "8" | "８" => &["はち"],
-                "9" | "９" => &["きゅう"],
-                _ => unreachable!("unexpected alphanumeric {alpha}"),
+                _ => unreachable!("unexpected alphabetic character '{alpha}'"),
             };
             for alpha_reading in alpha_readings {
                 let corresponding_reading = reading_rest.get(..alpha_reading.len())?;
@@ -214,6 +204,157 @@ where
                 }
             }
             None
+        }
+        Some(segment @ Segment::Numeric(number)) => {
+            let mut nodes = Vec::new();
+
+            let mut numbers_left = number.chars().count();
+            let mut chars = number.char_indices();
+            while let Some((idx, number)) = chars.next() {
+                numbers_left -= 1;
+                let readings: &[&str] = match number {
+                    '0' | '０' => &["ぜろ", "れい"],
+                    '1' | '１' => {
+                        if numbers_left == 0 {
+                            &["いち", "ひと"]
+                        } else {
+                            match (numbers_left - 1) % 4 {
+                                3 => &["まん", "いちまん"],
+                                2 => &["せん", "いっせん"],
+                                1 => &["ひゃく", "いっぴゃく"],
+                                0 => &["じゅう"],
+                                _ => unreachable!(),
+                            }
+                        }
+                    }
+                    '2' | '２' => {
+                        if numbers_left == 0 {
+                            &["に", "ふた"]
+                        } else {
+                            match (numbers_left - 1) % 4 {
+                                3 => &["にまん"],
+                                2 => &["にせん"],
+                                1 => &["にひゃく"],
+                                0 => &["にじゅう"],
+                                _ => unreachable!(),
+                            }
+                        }
+                    }
+                    '3' | '３' => {
+                        if numbers_left == 0 {
+                            &["さん", "むっ"]
+                        } else {
+                            match (numbers_left - 1) % 4 {
+                                3 => &["さんまん"],
+                                2 => &["さんぜん"],
+                                1 => &["さんびゃく"],
+                                0 => &["さんじゅう"],
+                                _ => unreachable!(),
+                            }
+                        }
+                    }
+                    '4' | '４' => {
+                        if numbers_left == 0 {
+                            &["し", "よん", "よっ"]
+                        } else {
+                            match (numbers_left - 1) % 4 {
+                                3 => &["よんまん"],
+                                2 => &["よんせん"],
+                                1 => &["よんひゃく"],
+                                0 => &["よんじゅう"],
+                                _ => unreachable!(),
+                            }
+                        }
+                    }
+                    '5' | '５' => {
+                        if numbers_left == 0 {
+                            &["ご", "いつ"]
+                        } else {
+                            match (numbers_left - 1) % 4 {
+                                3 => &["ごまん"],
+                                2 => &["ごせん"],
+                                1 => &["ごひゃく"],
+                                0 => &["ごじゅう"],
+                                _ => unreachable!(),
+                            }
+                        }
+                    }
+                    '6' | '６' => {
+                        if numbers_left == 0 {
+                            &["ろく", "むっ"]
+                        } else {
+                            match (numbers_left - 1) % 4 {
+                                3 => &["ろくまん"],
+                                2 => &["ろくせん"],
+                                1 => &["ろっぴゃく"],
+                                0 => &["ろくじゅう"],
+                                _ => unreachable!(),
+                            }
+                        }
+                    }
+                    '7' | '７' => {
+                        if numbers_left == 0 {
+                            &["しち", "なな"]
+                        } else {
+                            match (numbers_left - 1) % 4 {
+                                3 => &["ななまん"],
+                                2 => &["ななせん"],
+                                1 => &["ななひゃく"],
+                                0 => &["ななじゅう"],
+                                _ => unreachable!(),
+                            }
+                        }
+                    }
+                    '8' | '８' => {
+                        if numbers_left == 0 {
+                            &["はち", "やっ"]
+                        } else {
+                            match (numbers_left - 1) % 4 {
+                                3 => &["はちまん"],
+                                2 => &["はっせん"],
+                                1 => &["はっぴゃく"],
+                                0 => &["はちじゅう"],
+                                _ => unreachable!(),
+                            }
+                        }
+                    }
+                    '9' | '９' => {
+                        if numbers_left == 0 {
+                            &["きゅう", "ここの"]
+                        } else {
+                            match (numbers_left - 1) % 4 {
+                                3 => &["きゅうまん"],
+                                2 => &["きゅうせん"],
+                                1 => &["きゅうひゃく"],
+                                0 => &["きゅうじゅう"],
+                                _ => unreachable!(),
+                            }
+                        }
+                    }
+                    _ => unreachable!("unexpected numeric character '{number}'"),
+                };
+                for reading in readings {
+                    if reading_rest.starts_with(reading) {
+                        let reading_rest = &reading_rest[reading.len()..];
+                        let extensions = map_inner(
+                            segments_rest.clone(),
+                            reading_rest,
+                            kanji_to_readings,
+                            None,
+                            false,
+                        )?;
+                        nodes.push(FuriganaNode {
+                            segment: Segment::Numeric(
+                                &segment.inner()[idx..idx + number.len_utf8()],
+                            ),
+                            reading,
+                            extensions,
+                            kanji_accurate: None,
+                        });
+                    }
+                }
+            }
+            return Some(nodes);
         }
         Some(segment @ Segment::Exception(exception)) => match exception {
             "ヶ" => {
@@ -310,15 +451,15 @@ fn kana_equivalent(left: &str, right: &str) -> bool {
     let mut previous_right = None;
     for (left, right) in left.chars().zip(right.chars()) {
         if left == 'ー' && right != 'ー' {
-            let Some(previous_right) = previous_right  else {
-                return false
+            let Some(previous_right) = previous_right else {
+                return false;
             };
             if !is_extension(previous_right, right) {
                 return false;
             }
         } else if right == 'ー' && left != 'ー' {
-            let Some(previous_left) = previous_left  else {
-                return false
+            let Some(previous_left) = previous_left else {
+                return false;
             };
             if !is_extension(previous_left, left) {
                 return false;
@@ -353,11 +494,11 @@ fn is_extension(previous: char, next: char) -> bool {
 
 // checks if the actual reading could be the "ideal" reading (according to kanji reading info) with rendaku
 fn rendaku_equivalent(ideal_reading: &str, actual_reading: &str) -> bool {
-    let Some(ideal_char) = ideal_reading.chars().next()  else {
+    let Some(ideal_char) = ideal_reading.chars().next() else {
         // both empty
         return actual_reading.is_empty();
     };
-    let Some(actual_char) = actual_reading.chars().next()  else {
+    let Some(actual_char) = actual_reading.chars().next() else {
         // ideal not empty, actual empty
         return false;
     };
@@ -400,11 +541,11 @@ fn rendaku_equivalent(ideal_reading: &str, actual_reading: &str) -> bool {
 
 // checks if the actual reading could be the "ideal" reading (according to kanji reading info) with "sokuonbin" (consonant doubling)
 fn sokuonbin_equivalent(ideal_reading: &str, actual_reading: &str) -> bool {
-    let Some(ideal_char) = ideal_reading.chars().last()  else {
+    let Some(ideal_char) = ideal_reading.chars().last() else {
         // both empty
         return actual_reading.is_empty();
     };
-    let Some(actual_char) = actual_reading.chars().last()  else {
+    let Some(actual_char) = actual_reading.chars().last() else {
         // ideal not empty, actual empty
         return false;
     };
@@ -629,6 +770,18 @@ mod test {
             ]
         )));
         assert_eq!(furigana.len(), 1);
+    }
+
+    #[test]
+    fn handles_numbers() {
+        let furigana = prepare_furigana(crate::map_naive("10時", "じゅうじ"));
+        println!("{furigana:?}");
+
+        assert_eq!(furigana.len(), 1);
+        assert_eq!(
+            furigana[0].1,
+            vec![("10", Some("じゅう")), ("時", Some("じ"))]
+        );
     }
 
     #[test]

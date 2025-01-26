@@ -1,9 +1,17 @@
-pub fn is_alphanumeric(c: char) -> bool {
-    c.is_ascii_alphanumeric() || is_fullwidth(c) || is_halfwidth(c)
+pub fn is_numeric_west(c: char) -> bool {
+    c.is_numeric()
+}
+
+pub fn is_numeric_fullwidth(c: char) -> bool {
+    ('０'..='９').contains(&c)
+}
+
+pub fn is_alphabetic(c: char) -> bool {
+    c.is_ascii_alphabetic() || is_fullwidth(c) || is_halfwidth(c)
 }
 
 pub fn is_fullwidth(c: char) -> bool {
-    ('０'..='９').contains(&c) || ('Ａ'..='Ｚ').contains(&c) || ('ａ'..='ｚ').contains(&c)
+    ('Ａ'..='Ｚ').contains(&c) || ('ａ'..='ｚ').contains(&c)
 }
 
 pub fn is_halfwidth(c: char) -> bool {
