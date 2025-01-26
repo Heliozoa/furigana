@@ -206,17 +206,20 @@ where
             None
         }
         Some(segment @ Segment::Numeric(number)) => {
-            let mut nodes = Vec::new();
-
+            let mut readings = Vec::new();
             let mut numbers_left = number.chars().count();
-            let mut chars = number.char_indices();
-            while let Some((idx, number)) = chars.next() {
+            let mut digits = number.chars();
+            while let Some(digit) = digits.next() {
+                println!("digit {digit}");
+                println!("readings {readings:#?}");
                 numbers_left -= 1;
-                let readings: &[&str] = match number {
+                let digit_readings: &[&str] = match digit {
                     '0' | '０' => &["ぜろ", "れい"],
                     '1' | '１' => {
                         if numbers_left == 0 {
                             &["いち", "ひと"]
+                        } else if numbers_left % 8 == 0 {
+                            &["おく", "いちおく"]
                         } else {
                             match (numbers_left - 1) % 4 {
                                 3 => &["まん", "いちまん"],
@@ -230,6 +233,8 @@ where
                     '2' | '２' => {
                         if numbers_left == 0 {
                             &["に", "ふた"]
+                        } else if numbers_left % 8 == 0 {
+                            &["におく"]
                         } else {
                             match (numbers_left - 1) % 4 {
                                 3 => &["にまん"],
@@ -243,6 +248,8 @@ where
                     '3' | '３' => {
                         if numbers_left == 0 {
                             &["さん", "むっ"]
+                        } else if numbers_left % 8 == 0 {
+                            &["さんおく"]
                         } else {
                             match (numbers_left - 1) % 4 {
                                 3 => &["さんまん"],
@@ -256,12 +263,14 @@ where
                     '4' | '４' => {
                         if numbers_left == 0 {
                             &["し", "よん", "よっ"]
+                        } else if numbers_left % 8 == 0 {
+                            &["よんおく"]
                         } else {
                             match (numbers_left - 1) % 4 {
-                                3 => &["よんまん"],
-                                2 => &["よんせん"],
-                                1 => &["よんひゃく"],
-                                0 => &["よんじゅう"],
+                                3 => &["しまん", "よんまん"],
+                                2 => &["しせん", "よんせん"],
+                                1 => &["しひゃく", "よんひゃく"],
+                                0 => &["しじゅう", "よんじゅう"],
                                 _ => unreachable!(),
                             }
                         }
@@ -269,6 +278,8 @@ where
                     '5' | '５' => {
                         if numbers_left == 0 {
                             &["ご", "いつ"]
+                        } else if numbers_left % 8 == 0 {
+                            &["ごおく"]
                         } else {
                             match (numbers_left - 1) % 4 {
                                 3 => &["ごまん"],
@@ -282,6 +293,8 @@ where
                     '6' | '６' => {
                         if numbers_left == 0 {
                             &["ろく", "むっ"]
+                        } else if numbers_left % 8 == 0 {
+                            &["ろくおく"]
                         } else {
                             match (numbers_left - 1) % 4 {
                                 3 => &["ろくまん"],
@@ -295,12 +308,14 @@ where
                     '7' | '７' => {
                         if numbers_left == 0 {
                             &["しち", "なな"]
+                        } else if numbers_left % 8 == 0 {
+                            &["ななおく"]
                         } else {
                             match (numbers_left - 1) % 4 {
-                                3 => &["ななまん"],
-                                2 => &["ななせん"],
-                                1 => &["ななひゃく"],
-                                0 => &["ななじゅう"],
+                                3 => &["しちまん", "ななまん"],
+                                2 => &["しちせん", "ななせん"],
+                                1 => &["しちひゃく", "ななひゃく"],
+                                0 => &["しちじゅう", "ななじゅう"],
                                 _ => unreachable!(),
                             }
                         }
@@ -331,30 +346,71 @@ where
                             }
                         }
                     }
-                    _ => unreachable!("unexpected numeric character '{number}'"),
+                    _ => unreachable!("unexpected numeric character '{digit}'"),
                 };
-                for reading in readings {
-                    if reading_rest.starts_with(reading) {
-                        let reading_rest = &reading_rest[reading.len()..];
-                        let extensions = map_inner(
-                            segments_rest.clone(),
-                            reading_rest,
-                            kanji_to_readings,
-                            None,
-                            false,
-                        )?;
-                        nodes.push(FuriganaNode {
-                            segment: Segment::Numeric(
-                                &segment.inner()[idx..idx + number.len_utf8()],
-                            ),
-                            reading,
-                            extensions,
-                            kanji_accurate: None,
-                        });
+                if readings.is_empty() {
+                    // initialise the readings list with the potential readings for the first digit
+                    for &digit_reading in digit_readings {
+                        if reading_rest.starts_with(digit_reading) {
+                            readings.push(dbg!(digit_reading));
+                        }
                     }
+                } else {
+                    // else, we'll tack on each potential reading for this digit onto each potential reading
+                    // for the preceding digit sequence
+                    let mut new_readings = Vec::new();
+                    for &reading in dbg!(&readings) {
+                        println!("nr {new_readings:#?}");
+                        // cut off the reading already processed
+                        let reading_remaining = &reading_rest[reading.len()..];
+                        let mut valid_digit_readings = Vec::new();
+                        for &digit_reading in dbg!(digit_readings) {
+                            if reading_remaining.starts_with(digit_reading) {
+                                valid_digit_readings.push(digit_reading);
+                            }
+                        }
+
+                        if valid_digit_readings.is_empty() {
+                            // having no reading for zero is okay
+                            if digit == '0' || digit == '０' {
+                                new_readings.push(reading);
+                            } else {
+                                // else, this reading branch is invalid
+                                continue;
+                            }
+                        } else {
+                            for valid_digit_reading in &valid_digit_readings {
+                                println!("d {digit}");
+                                println!("reading {reading}");
+                                println!("vdr {valid_digit_reading}");
+                                println!("rr {reading_rest}");
+                                new_readings.push(
+                                    &reading_rest[..reading.len() + valid_digit_reading.len()],
+                                );
+                            }
+                        }
+                    }
+                    readings = dbg!(new_readings);
                 }
             }
-            return Some(nodes);
+
+            let mut nodes = Vec::new();
+            for reading in readings {
+                let extensions = map_inner(
+                    segments_rest.clone(),
+                    &reading_rest[reading.len()..],
+                    kanji_to_readings,
+                    None,
+                    false,
+                )?;
+                nodes.push(FuriganaNode {
+                    segment,
+                    reading: &reading_rest[..reading.len()],
+                    extensions,
+                    kanji_accurate: None,
+                })
+            }
+            return if nodes.is_empty() { None } else { Some(nodes) };
         }
         Some(segment @ Segment::Exception(exception)) => match exception {
             "ヶ" => {
@@ -773,20 +829,48 @@ mod test {
     }
 
     #[test]
+    //#[ignore = "todo"]
     fn handles_numbers() {
-        let furigana = prepare_furigana(crate::map_naive("10時", "じゅうじ"));
+        let furigana = prepare_furigana(crate::map_naive("1010日", "せんじゅうにち"));
         println!("{furigana:?}");
-
         assert_eq!(furigana.len(), 1);
         assert_eq!(
             furigana[0].1,
-            vec![("10", Some("じゅう")), ("時", Some("じ"))]
+            vec![("1010", Some("せんじゅう")), ("日", Some("にち"))]
+        );
+
+        let furigana = prepare_furigana(crate::map_naive(
+            "12345日",
+            "いちまんにせんさんびゃくよんじゅうごにち",
+        ));
+        println!("{furigana:?}");
+        assert_eq!(furigana.len(), 1);
+        assert_eq!(
+            furigana[0].1,
+            vec![
+                ("12345", Some("いちまんにせんさんびゃくよんじゅうご")),
+                ("日", Some("にち"))
+            ]
+        );
+
+        let furigana = prepare_furigana(crate::map_naive(
+            "123456789日",
+            "いちおくにせんさんびゃくよんじゅうごまんろくせんななひゃくはちじゅうきゅうにち",
+        ));
+        println!("{furigana:?}");
+        assert_eq!(furigana.len(), 1);
+        assert_eq!(
+            furigana[0].1,
+            vec![
+                ("123456789", Some("いちおくにせんさんびゃくよんじゅうごまんろくせんななひゃくはちじゅうきゅう")),
+                ("日", Some("にち"))
+            ]
         );
     }
 
     #[test]
     #[ignore = "todo?"]
-    fn handles_irregular() {
+    fn handles_irregular_otona() {
         let mut kanji_to_readings = HashMap::new();
         kanji_to_readings.insert(
             "大".to_string(),
@@ -806,6 +890,18 @@ mod test {
         println!("{furigana:?}");
 
         assert!(furigana.contains(&(2, vec![("突", Some("とっ")), ("破", Some("ぱ"))])));
+        assert_eq!(furigana.len(), 2);
+    }
+
+    #[test]
+    #[ignore = "todo?"]
+    fn handles_irregular_tooka() {
+        let mut kanji_to_readings = HashMap::new();
+        kanji_to_readings.insert("日".to_string(), vec!["にち".to_string(), "か".to_string()]);
+        let furigana = prepare_furigana(crate::map("１０日", "とおか", &kanji_to_readings));
+        println!("{furigana:?}");
+
+        assert!(furigana.contains(&(2, vec![("１０", Some("とお")), ("日", Some("か"))])));
         assert_eq!(furigana.len(), 2);
     }
 }
