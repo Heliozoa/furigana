@@ -48,7 +48,9 @@ assigns a high accuracy value to the correct reading and a low value to the othe
 
 - The algorithm used is recursive and not optimised, so it may be inefficient for long, kanji-heavy inputs.
 
-- If the library fails to produce the correct mapping, or if its accuracy is lower than an incorrect mapping's, a GitHub issue is much appreciated!
+- Irregular readings such as おとな for 大人 and とおか １０日 are handled case by case so these may be mapped in correctly in some cases. Issues on these are appreciated.
+
+- If the library fails to produce the correct mapping, or if its accuracy is lower than an incorrect mapping's, an issue is much appreciated!
 
 ## License
 

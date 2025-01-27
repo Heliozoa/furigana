@@ -89,7 +89,7 @@ pub struct FuriganaSegment<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FuriganaTree<'a> {
-    pub word: &'a str,
+    pub text: &'a str,
     pub reading: &'a str,
     pub nodes: Vec<FuriganaNode<'a>>,
 }
