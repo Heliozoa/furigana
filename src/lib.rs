@@ -259,8 +259,7 @@ where
 
             let mut readings = Vec::new();
             let mut numbers_left = number.chars().count();
-            let mut digits = number.chars();
-            while let Some(digit) = digits.next() {
+            for digit in number.chars() {
                 numbers_left -= 1;
 
                 let digit_readings = utils::digit_readings(digit, numbers_left);
@@ -322,7 +321,11 @@ where
                     kanji_accurate: None,
                 })
             }
-            return if nodes.is_empty() { None } else { Some(nodes) };
+            if nodes.is_empty() {
+                None
+            } else {
+                Some(nodes)
+            }
         }
         Some(segment @ Segment::Exception(exception)) => match exception {
             // ヶ is a special case that is always read as か
