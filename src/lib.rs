@@ -132,14 +132,16 @@ where
         Some(segment @ Segment::Kanji(kanji)) => {
             // special casing...
             if kanji == "大" && reading_rest.starts_with("おとな") {
-                if let Some(Segment::Kanji("人")) = segments_rest.next() {
+                if let Some(Segment::Kanji("人")) = segments_rest.peek() {
+                    segments_rest.next();
+                    let reading_rest = &reading_rest["おとな".len()..];
                     let extensions =
                         map_inner(segments_rest, reading_rest, kanji_to_readings, None, true)?;
                     return Some(vec![FuriganaNode {
                         segment: Segment::Kanji("大人"),
                         reading: "おとな",
                         extensions,
-                        kanji_accurate: None,
+                        kanji_accurate: Some(KanjiAccuracy::Accurate),
                     }]);
                 } else {
                     return None;
@@ -805,6 +807,9 @@ mod test {
         );
         let furigana = prepare_furigana(crate::map("大人", "おとな", &kanji_to_readings));
         println!("{furigana:?}");
+
+        assert!(furigana.contains(&(2, vec![("大人", Some("おとな"))])));
+        assert_eq!(furigana.len(), 1);
     }
 
     #[test]
