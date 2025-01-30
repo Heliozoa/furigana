@@ -749,7 +749,6 @@ mod test {
     }
 
     #[test]
-    //#[ignore = "todo"]
     fn handles_numbers() {
         let furigana = prepare_furigana(crate::map_naive("1010日", "せんじゅうにち"));
         println!("{furigana:?}");
@@ -784,6 +783,25 @@ mod test {
             vec![
                 ("123456789", Some("いちおくにせんさんびゃくよんじゅうごまんろくせんななひゃくはちじゅうきゅう")),
                 ("日", Some("にち"))
+            ]
+        );
+
+        let mut kanji_to_readings = HashMap::new();
+        kanji_to_readings.insert("時".to_string(), vec!["じ".to_string()]);
+        kanji_to_readings.insert("間".to_string(), vec!["かん".to_string()]);
+        let furigana = prepare_furigana(crate::map(
+            "２４時間",
+            "にじゅうよじかん",
+            &kanji_to_readings,
+        ));
+        println!("{furigana:?}");
+        assert_eq!(furigana.len(), 2);
+        assert_eq!(
+            furigana[0].1,
+            vec![
+                ("２４", Some("にじゅうよ")),
+                ("時", Some("じ")),
+                ("間", Some("かん"))
             ]
         );
     }
