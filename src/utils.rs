@@ -148,7 +148,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
         }
         '8' | '８' => {
             if numbers_left == 0 {
-                &["はち", "やっ"]
+                &["はち", "やっ", "はっ"]
             } else {
                 match (numbers_left - 1) % 4 {
                     3 => &["はちまん"],
