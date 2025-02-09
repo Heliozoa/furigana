@@ -116,7 +116,7 @@ where
         Some(segment @ Segment::Kana(kana)) => {
             // try to get matching kana from reading
             let reading = reading_rest.get(0..kana.len())?;
-            if !kana_equivalent(reading, kana) {
+            if !jp_equivalent(reading, kana) {
                 // invalid mapping: segment and reading don't match
                 return None;
             }
@@ -232,7 +232,7 @@ where
 
             // check if the letter's reading and the next section of the reading and are kana equvalent
             let corresponding_reading = reading_rest.get(..alpha_reading.len())?;
-            if kana_equivalent(corresponding_reading, alpha_reading) {
+            if jp_equivalent(corresponding_reading, alpha_reading) {
                 let reading_rest = &reading_rest[alpha_reading.len()..];
                 let extensions =
                     map_inner(segments_rest, reading_rest, kanji_to_readings, None, true)?;
@@ -418,9 +418,11 @@ where
     }
 }
 
-// checks whether the strings are equivalent if ignoring the difference between hiragana and katakana
-fn kana_equivalent(left: &str, right: &str) -> bool {
+// checks whether the strings are equivalent if
+// ignoring the difference between hiragana and katakana and fullwidth and halfwidth numbers
+fn jp_equivalent(left: &str, right: &str) -> bool {
     const UNICODE_KANA_TABLE_DISTANCE: u32 = 96;
+
     let mut previous_left = None;
     let mut previous_right = None;
     for (left, right) in left.chars().zip(right.chars()) {
@@ -443,8 +445,8 @@ fn kana_equivalent(left: &str, right: &str) -> bool {
         let leftu32 = left as u32;
         let rightu32 = right as u32;
         let equivalent = leftu32 == rightu32
-            || leftu32 == rightu32 + UNICODE_KANA_TABLE_DISTANCE
-            || leftu32 == rightu32 - UNICODE_KANA_TABLE_DISTANCE;
+            || leftu32 == rightu32.saturating_add(UNICODE_KANA_TABLE_DISTANCE)
+            || leftu32 == rightu32.saturating_sub(UNICODE_KANA_TABLE_DISTANCE);
         if !equivalent {
             return false;
         }
@@ -508,7 +510,7 @@ fn rendaku_equivalent(ideal_reading: &str, actual_reading: &str) -> bool {
             _ => false,
         };
     first_chars_rendaku_accurate
-        && kana_equivalent(
+        && jp_equivalent(
             &ideal_reading[ideal_char.len_utf8()..],
             &actual_reading[actual_char.len_utf8()..],
         )
@@ -533,7 +535,7 @@ fn sokuonbin_equivalent(ideal_reading: &str, actual_reading: &str) -> bool {
         matches!((ideal_char, actual_char), ('く' | 'ち' | 'つ', 'っ'))
     };
     last_chars_sokuonbin_accurate
-        && kana_equivalent(
+        && jp_equivalent(
             &ideal_reading[..ideal_reading.len() - ideal_char.len_utf8()],
             &actual_reading[..actual_reading.len() - actual_char.len_utf8()],
         )
@@ -549,7 +551,7 @@ fn check_kanji_accuracy(
     let kanji_readings = kanji_readings?;
     let kanji_accurate = kanji_readings
         .iter()
-        .any(|kr| kana_equivalent(kr, kanji_reading));
+        .any(|kr| jp_equivalent(kr, kanji_reading));
     if kanji_accurate {
         return Some(KanjiAccuracy::Accurate);
     }

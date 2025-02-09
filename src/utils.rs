@@ -50,7 +50,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                 match (numbers_left - 1) % 4 {
                     3 => &["まん", "いちまん"],
                     2 => &["せん", "いっせん"],
-                    1 => &["ひゃく", "いっぴゃく"],
+                    1 => &["ひゃく", "いっぴゃく", "ひゃっ"],
                     0 => &["じゅう"],
                     _ => unreachable!(),
                 }
@@ -161,7 +161,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
         }
         '9' | '９' => {
             if numbers_left == 0 {
-                &["きゅう", "ここの"]
+                &["きゅう", "ここの", "く"]
             } else {
                 match (numbers_left - 1) % 4 {
                     3 => &["きゅうまん"],
