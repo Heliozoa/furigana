@@ -463,7 +463,6 @@ fn sound_equivalent(left: char, right: char) -> bool {
         ('じ', 'ぢ') | ('ぢ', 'じ') => true,
         ('ず', 'づ') | ('づ', 'ず') => true,
         ('お', 'を') | ('を', 'お') => true,
-        ('え', 'へ') | ('へ', 'え') => true,
         _ => false,
     }
 }
