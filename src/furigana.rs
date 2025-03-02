@@ -1,4 +1,4 @@
-use crate::{jp_equivalent, segmentation::Segment};
+use crate::{reading_equivalent, segmentation::Segment};
 use std::fmt::Display;
 
 /// A mapping of furigana to a word.
@@ -22,7 +22,7 @@ impl<'a> Furigana<'a> {
 
         for node in nodes {
             let word = node.segment.inner();
-            let reading = if jp_equivalent(word, node.reading) {
+            let reading = if reading_equivalent(word, node.reading) {
                 // no need for furigana here
                 None
             } else {

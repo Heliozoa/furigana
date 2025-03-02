@@ -116,7 +116,7 @@ where
         Some(segment @ Segment::Kana(kana)) => {
             // try to get matching kana from reading
             let reading = reading_rest.get(0..kana.len())?;
-            if !jp_equivalent(reading, kana) {
+            if !reading_equivalent(reading, kana) {
                 // invalid mapping: segment and reading don't match
                 return None;
             }
@@ -232,7 +232,7 @@ where
 
             // check if the letter's reading and the next section of the reading and are kana equvalent
             let corresponding_reading = reading_rest.get(..alpha_reading.len())?;
-            if jp_equivalent(corresponding_reading, alpha_reading) {
+            if reading_equivalent(corresponding_reading, alpha_reading) {
                 let reading_rest = &reading_rest[alpha_reading.len()..];
                 let extensions =
                     map_inner(segments_rest, reading_rest, kanji_to_readings, None, true)?;
@@ -420,7 +420,8 @@ where
 
 // checks whether the strings are equivalent if
 // ignoring the difference between hiragana and katakana and fullwidth and halfwidth numbers
-fn jp_equivalent(left: &str, right: &str) -> bool {
+// and kana with the same reading
+fn reading_equivalent(left: &str, right: &str) -> bool {
     const UNICODE_KANA_TABLE_DISTANCE: u32 = 96;
 
     let mut previous_left = None;
@@ -446,7 +447,8 @@ fn jp_equivalent(left: &str, right: &str) -> bool {
         let rightu32 = right as u32;
         let equivalent = leftu32 == rightu32
             || leftu32 == rightu32.saturating_add(UNICODE_KANA_TABLE_DISTANCE)
-            || leftu32 == rightu32.saturating_sub(UNICODE_KANA_TABLE_DISTANCE);
+            || leftu32 == rightu32.saturating_sub(UNICODE_KANA_TABLE_DISTANCE)
+            || sound_equivalent(left, right);
         if !equivalent {
             return false;
         }
@@ -454,6 +456,16 @@ fn jp_equivalent(left: &str, right: &str) -> bool {
         previous_right = Some(right);
     }
     left.chars().count() == right.chars().count()
+}
+
+fn sound_equivalent(left: char, right: char) -> bool {
+    match (left, right) {
+        ('じ', 'ぢ') | ('ぢ', 'じ') => true,
+        ('ず', 'づ') | ('づ', 'ず') => true,
+        ('お', 'を') | ('を', 'お') => true,
+        ('え', 'へ') | ('へ', 'え') => true,
+        _ => false,
+    }
 }
 
 // checks if the next char can be an "extension" of the previous char the same way ー is used for katakana.
@@ -510,7 +522,7 @@ fn rendaku_equivalent(ideal_reading: &str, actual_reading: &str) -> bool {
             _ => false,
         };
     first_chars_rendaku_accurate
-        && jp_equivalent(
+        && reading_equivalent(
             &ideal_reading[ideal_char.len_utf8()..],
             &actual_reading[actual_char.len_utf8()..],
         )
@@ -535,7 +547,7 @@ fn sokuonbin_equivalent(ideal_reading: &str, actual_reading: &str) -> bool {
         matches!((ideal_char, actual_char), ('く' | 'ち' | 'つ', 'っ'))
     };
     last_chars_sokuonbin_accurate
-        && jp_equivalent(
+        && reading_equivalent(
             &ideal_reading[..ideal_reading.len() - ideal_char.len_utf8()],
             &actual_reading[..actual_reading.len() - actual_char.len_utf8()],
         )
@@ -551,7 +563,7 @@ fn check_kanji_accuracy(
     let kanji_readings = kanji_readings?;
     let kanji_accurate = kanji_readings
         .iter()
-        .any(|kr| jp_equivalent(kr, kanji_reading));
+        .any(|kr| reading_equivalent(kr, kanji_reading));
     if kanji_accurate {
         return Some(KanjiAccuracy::Accurate);
     }
@@ -840,6 +852,17 @@ mod test {
         println!("{furigana:?}");
 
         assert!(furigana.contains(&(4, vec![("１０", Some("とお")), ("日", Some("か"))])));
+        assert_eq!(furigana.len(), 1);
+    }
+
+    #[test]
+    fn handles_homophonic_kana() {
+        let mut kanji_to_readings = HashMap::new();
+        kanji_to_readings.insert("近".to_string(), vec!["ちか".to_string()]);
+        let furigana = prepare_furigana(crate::map("近づく", "ちかずく", &kanji_to_readings));
+        println!("{furigana:?}");
+
+        assert!(furigana.contains(&(2, vec![("近", Some("ちか")), ("づく", None)])));
         assert_eq!(furigana.len(), 1);
     }
 }
