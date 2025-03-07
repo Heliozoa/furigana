@@ -459,12 +459,10 @@ fn reading_equivalent(left: &str, right: &str) -> bool {
 }
 
 fn sound_equivalent(left: char, right: char) -> bool {
-    match (left, right) {
-        ('じ', 'ぢ') | ('ぢ', 'じ') => true,
-        ('ず', 'づ') | ('づ', 'ず') => true,
-        ('お', 'を') | ('を', 'お') => true,
-        _ => false,
-    }
+    matches!(
+        (left, right),
+        ('じ', 'ぢ') | ('ぢ', 'じ') | ('ず', 'づ') | ('づ', 'ず') | ('お', 'を') | ('を', 'お')
+    )
 }
 
 // checks if the next char can be an "extension" of the previous char the same way ー is used for katakana.
