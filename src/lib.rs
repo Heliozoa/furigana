@@ -246,7 +246,7 @@ where
             None
         }
         Some(segment @ Segment::Numeric(number)) => {
-            if number == "10" || number == "１０" && reading_rest.starts_with("とお") {
+            if (number == "10" || number == "１０") && reading_rest.starts_with("とお") {
                 // special casing とお for １０
                 let reading_rest = &reading_rest["とお".len()..];
                 let extensions =
@@ -860,6 +860,17 @@ mod test {
         println!("{furigana:?}");
 
         assert!(furigana.contains(&(2, vec![("近", Some("ちか")), ("づく", None)])));
+        assert_eq!(furigana.len(), 1);
+    }
+
+    #[test]
+    fn regression_1() {
+        let mut kanji_to_readings = HashMap::new();
+        kanji_to_readings.insert("時".to_string(), vec!["じ".to_string()]);
+        let furigana = prepare_furigana(crate::map("10時", "じゅうじ", &kanji_to_readings));
+        println!("{furigana:?}");
+
+        assert!(furigana.contains(&(2, vec![("10", Some("じゅう")), ("時", Some("じ"))])));
         assert_eq!(furigana.len(), 1);
     }
 }
