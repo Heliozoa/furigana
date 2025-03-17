@@ -9,15 +9,11 @@ pub fn is_numeric_fullwidth(c: char) -> bool {
 }
 
 pub fn is_alphabetic(c: char) -> bool {
-    c.is_ascii_alphabetic() || is_fullwidth(c) || is_halfwidth(c)
+    c.is_ascii_alphabetic() || is_fullwidth_alphabetic(c)
 }
 
-pub fn is_fullwidth(c: char) -> bool {
+pub fn is_fullwidth_alphabetic(c: char) -> bool {
     ('Ａ'..='Ｚ').contains(&c) || ('ａ'..='ｚ').contains(&c)
-}
-
-pub fn is_halfwidth(c: char) -> bool {
-    (0xFF61..=0xFF9F).contains(&(c as u32))
 }
 
 pub fn is_hiragana(c: char) -> bool {
@@ -73,7 +69,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
         }
         '3' | '３' => {
             if numbers_left == 0 {
-                &["さん", "むっ"]
+                &["さん", "みっ"]
             } else if numbers_left % 8 == 0 {
                 &["さんおく"]
             } else {

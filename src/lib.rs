@@ -143,8 +143,6 @@ where
                         extensions,
                         kanji_accurate: Some(KanjiAccuracy::Accurate),
                     }]);
-                } else {
-                    return None;
                 }
             }
 
@@ -162,13 +160,24 @@ where
 
             // try to use up varying lengths of the remaining reading
             let mut use_reading_up_to = 0;
-            for reading_char in reading_rest.chars() {
+            // the longest reading for a single character appears to be 6 kana long,
+            // and even that is rare and archaig so we can save some work by only considering these readings
+            let longest_reading = kanji.chars().count() * 6;
+            for reading_char in reading_rest.chars().take(longest_reading) {
                 use_reading_up_to += reading_char.len_utf8();
                 let reading = &reading_rest[..use_reading_up_to];
 
                 let mut segments_rest = segments_rest.clone();
                 let can_be_sokuonbin = segments_rest.peek().is_some();
                 let reading_rest = &reading_rest[use_reading_up_to..];
+
+                let kanji_accurate =
+                    check_kanji_accuracy(kanji_readings, reading, can_be_rendaku, can_be_sokuonbin);
+
+                if matches!(kanji_accurate, Some(KanjiAccuracy::Inaccurate)) {
+                    // skip known inaccurate readings
+                    continue;
+                }
 
                 // keep recursing with the remaining segments and reading
                 if let Some(extensions) = map_inner(
@@ -178,12 +187,6 @@ where
                     Some(kanji),
                     true,
                 ) {
-                    let kanji_accurate = check_kanji_accuracy(
-                        kanji_readings,
-                        reading,
-                        can_be_rendaku,
-                        can_be_sokuonbin,
-                    );
                     nodes.push(FuriganaNode {
                         segment,
                         reading,
@@ -419,8 +422,11 @@ where
 }
 
 // checks whether the strings are equivalent if
-// ignoring the difference between hiragana and katakana and fullwidth and halfwidth numbers
-// and kana with the same reading
+// ignoring the difference between
+// - hiragana and katakana
+// - fullwidth and halfwidth numbers
+// - kana with the same reading
+// - vowel extenders
 fn reading_equivalent(left: &str, right: &str) -> bool {
     const UNICODE_KANA_TABLE_DISTANCE: u32 = 96;
 
@@ -434,6 +440,7 @@ fn reading_equivalent(left: &str, right: &str) -> bool {
             if !is_extension(previous_right, right) {
                 return false;
             }
+            continue;
         } else if right == 'ー' && left != 'ー' {
             let Some(previous_left) = previous_left else {
                 return false;
@@ -441,6 +448,7 @@ fn reading_equivalent(left: &str, right: &str) -> bool {
             if !is_extension(previous_left, left) {
                 return false;
             }
+            continue;
         }
 
         let leftu32 = left as u32;
@@ -467,14 +475,112 @@ fn sound_equivalent(left: char, right: char) -> bool {
 
 // checks if the next char can be an "extension" of the previous char the same way ー is used for katakana.
 fn is_extension(previous: char, next: char) -> bool {
-    // this is confusing to look at, but just find the comma for each line and it'll make sense...
     matches!(
         (previous, next),
-        ('あ' | 'か' | 'さ' | 'た' | 'な' | 'は' | 'ま', 'あ' | 'ア')
-            | ('い' | 'き' | 'し' | 'ち' | 'に' | 'ひ' | 'み', 'い' | 'イ')
-            | ('う' | 'く' | 'す' | 'つ' | 'ぬ' | 'ふ' | 'む', 'う' | 'ウ')
-            | ('え' | 'け' | 'せ' | 'て' | 'ね' | 'へ' | 'め', 'え' | 'エ')
-            | ('お' | 'こ' | 'そ' | 'と' | 'の' | 'ほ' | 'も', 'お' | 'オ')
+        (
+            'あ' | 'ア'
+                | 'か'
+                | 'カ'
+                | 'さ'
+                | 'サ'
+                | 'た'
+                | 'タ'
+                | 'な'
+                | 'ナ'
+                | 'は'
+                | 'ハ'
+                | 'ま'
+                | 'マ'
+                | 'や'
+                | 'ヤ'
+                | 'ら'
+                | 'ラ'
+                | 'わ'
+                | 'ワ',
+            'あ' | 'ア'
+        ) | (
+            'い' | 'イ'
+                | 'き'
+                | 'キ'
+                | 'し'
+                | 'シ'
+                | 'ち'
+                | 'チ'
+                | 'に'
+                | 'ニ'
+                | 'ひ'
+                | 'ヒ'
+                | 'み'
+                | 'ミ'
+                | 'り'
+                | 'リ'
+                | 'け'
+                | 'ケ'
+                | 'せ'
+                | 'セ'
+                | 'て'
+                | 'テ'
+                | 'ね'
+                | 'ネ'
+                | 'へ'
+                | 'ヘ'
+                | 'め'
+                | 'メ'
+                | 'れ'
+                | 'レ',
+            'い' | 'イ'
+        ) | (
+            'う' | 'ウ'
+                | 'く'
+                | 'ク'
+                | 'す'
+                | 'ス'
+                | 'つ'
+                | 'ツ'
+                | 'ぬ'
+                | 'ヌ'
+                | 'ふ'
+                | 'フ'
+                | 'む'
+                | 'ム'
+                | 'る'
+                | 'ル',
+            'う' | 'ウ'
+        ) | (
+            'え' | 'エ'
+                | 'け'
+                | 'ケ'
+                | 'せ'
+                | 'セ'
+                | 'て'
+                | 'テ'
+                | 'ね'
+                | 'ネ'
+                | 'へ'
+                | 'ヘ'
+                | 'め'
+                | 'メ'
+                | 'れ'
+                | 'レ',
+            'え' | 'エ'
+        ) | (
+            'お' | 'オ'
+                | 'こ'
+                | 'コ'
+                | 'そ'
+                | 'ソ'
+                | 'と'
+                | 'ト'
+                | 'の'
+                | 'ノ'
+                | 'ほ'
+                | 'ホ'
+                | 'も'
+                | 'モ'
+                | 'ろ'
+                | 'ロ',
+            'お' | 'オ'
+        )
     )
 }
 
@@ -541,7 +647,10 @@ fn sokuonbin_equivalent(ideal_reading: &str, actual_reading: &str) -> bool {
     let last_chars_sokuonbin_accurate = if ideal_char == actual_char {
         true
     } else {
-        matches!((ideal_char, actual_char), ('く' | 'ち' | 'つ', 'っ'))
+        matches!(
+            (ideal_char, actual_char),
+            ('く' | 'ク' | 'ち' | 'チ' | 'つ' | 'ツ', 'っ')
+        )
     };
     last_chars_sokuonbin_accurate
         && reading_equivalent(
@@ -630,11 +739,7 @@ mod test {
             4,
             vec![("物", Some("もの")), ("の", None), ("怪", Some("け"))],
         )));
-        assert!(furigana.contains(&(
-            -4,
-            vec![("物", Some("も")), ("の", None), ("怪", Some("のけ"))],
-        )));
-        assert_eq!(furigana.len(), 2);
+        assert_eq!(furigana.len(), 1);
     }
 
     #[test]
@@ -716,7 +821,7 @@ mod test {
         println!("{furigana:?}");
 
         assert!(furigana.contains(&(3, vec![("花", Some("はな")), ("火", Some("び"))])));
-        assert_eq!(furigana.len(), 2);
+        assert_eq!(furigana.len(), 1);
     }
 
     #[test]
@@ -728,7 +833,7 @@ mod test {
         println!("{furigana:?}");
 
         assert!(furigana.contains(&(3, vec![("格", Some("かっ")), ("好", Some("こう"))])));
-        assert_eq!(furigana.len(), 3);
+        assert_eq!(furigana.len(), 1);
     }
 
     #[test]
@@ -740,7 +845,7 @@ mod test {
         println!("{furigana:?}");
 
         assert!(furigana.contains(&(2, vec![("突", Some("とっ")), ("破", Some("ぱ"))])));
-        assert_eq!(furigana.len(), 2);
+        assert_eq!(furigana.len(), 1);
     }
 
     #[test]
@@ -806,7 +911,7 @@ mod test {
             &kanji_to_readings,
         ));
         println!("{furigana:?}");
-        assert_eq!(furigana.len(), 2);
+        assert_eq!(furigana.len(), 1);
         assert_eq!(
             furigana[0].1,
             vec![
@@ -872,5 +977,84 @@ mod test {
 
         assert!(furigana.contains(&(2, vec![("10", Some("じゅう")), ("時", Some("じ"))])));
         assert_eq!(furigana.len(), 1);
+    }
+
+    #[test]
+    fn regression_2() {
+        let furigana = prepare_furigana(crate::map(
+            "CDプレイヤー",
+            "シーディープレーヤー",
+            &HashMap::new(),
+        ));
+        println!("{furigana:?}");
+
+        assert!(furigana.contains(&(
+            0,
+            vec![
+                ("C", Some("シー")),
+                ("D", Some("ディー")),
+                ("プレイヤー", None)
+            ]
+        )));
+        assert_eq!(furigana.len(), 1);
+    }
+
+    #[test]
+    fn long_1() {
+        let furigana = prepare_furigana(crate::map_naive(
+            "国際連合大量破壊兵器廃棄特別委員会",
+            "こくさいれんごうたいりょうはかいへいきはいきとくべついいんかい",
+        ));
+        assert!(furigana.contains(&(
+            0,
+            vec![(
+                "国際連合大量破壊兵器廃棄特別委員会",
+                Some("こくさいれんごうたいりょうはかいへいきはいきとくべついいんかい")
+            )]
+        )));
+        assert_eq!(furigana.len(), 1);
+    }
+
+    #[test]
+    fn long_2() {
+        let mut kanji_to_readings = HashMap::new();
+        kanji_to_readings.insert("国".to_string(), vec!["こく".to_string()]);
+        kanji_to_readings.insert("際".to_string(), vec!["さい".to_string()]);
+        kanji_to_readings.insert("連".to_string(), vec!["れん".to_string()]);
+        kanji_to_readings.insert("合".to_string(), vec!["ごう".to_string()]);
+        kanji_to_readings.insert("大".to_string(), vec!["たい".to_string()]);
+        kanji_to_readings.insert("量".to_string(), vec!["りょう".to_string()]);
+        kanji_to_readings.insert("破".to_string(), vec!["は".to_string()]);
+        kanji_to_readings.insert("壊".to_string(), vec!["かい".to_string()]);
+        kanji_to_readings.insert("兵".to_string(), vec!["へい".to_string()]);
+        kanji_to_readings.insert("器".to_string(), vec!["き".to_string()]);
+        kanji_to_readings.insert("廃".to_string(), vec!["はい".to_string()]);
+        kanji_to_readings.insert("棄".to_string(), vec!["き".to_string()]);
+        kanji_to_readings.insert("特".to_string(), vec!["とく".to_string()]);
+        kanji_to_readings.insert("別".to_string(), vec!["べつ".to_string()]);
+        kanji_to_readings.insert("委".to_string(), vec!["い".to_string()]);
+        kanji_to_readings.insert("員".to_string(), vec!["いん".to_string()]);
+        kanji_to_readings.insert("会".to_string(), vec!["かい".to_string()]);
+
+        let furigana = prepare_furigana(crate::map(
+            "国際連合大量破壊兵器廃棄特別委員会",
+            "こくさいれんごうたいりょうはかいへいきはいきとくべついいんかい",
+            &kanji_to_readings,
+        ));
+        assert_eq!(furigana.len(), 1);
+    }
+
+    #[test]
+    fn regression_3() {
+        let mut kanji_to_readings = HashMap::new();
+        kanji_to_readings.insert("学".to_string(), vec!["ガク".to_string()]);
+        kanji_to_readings.insert("会".to_string(), vec!["かい".to_string()]);
+
+        let furigana = prepare_furigana(crate::map("学会", "がっかい", &kanji_to_readings));
+        assert_eq!(furigana.len(), 1);
+        assert_eq!(
+            furigana[0],
+            (3, vec![("学", Some("がっ")), ("会", Some("かい"))])
+        );
     }
 }
