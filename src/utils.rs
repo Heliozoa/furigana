@@ -47,7 +47,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                     3 => &["まん", "いちまん"],
                     2 => &["せん", "いっせん"],
                     1 => &["ひゃく", "いっぴゃく", "ひゃっ"],
-                    0 => &["じゅう"],
+                    0 => &["じゅう", "じゅっ"],
                     _ => unreachable!(),
                 }
             }
@@ -62,7 +62,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                     3 => &["にまん"],
                     2 => &["にせん"],
                     1 => &["にひゃく"],
-                    0 => &["にじゅう"],
+                    0 => &["にじゅう", "にじゅっ"],
                     _ => unreachable!(),
                 }
             }
@@ -77,7 +77,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                     3 => &["さんまん"],
                     2 => &["さんぜん"],
                     1 => &["さんびゃく"],
-                    0 => &["さんじゅう"],
+                    0 => &["さんじゅう", "さんじゅっ"],
                     _ => unreachable!(),
                 }
             }
@@ -92,7 +92,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                     3 => &["しまん", "よんまん"],
                     2 => &["しせん", "よんせん"],
                     1 => &["しひゃく", "よんひゃく"],
-                    0 => &["しじゅう", "よんじゅう"],
+                    0 => &["しじゅう", "よんじゅう", "しじゅっ", "よんじゅっ"],
                     _ => unreachable!(),
                 }
             }
@@ -107,7 +107,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                     3 => &["ごまん"],
                     2 => &["ごせん"],
                     1 => &["ごひゃく"],
-                    0 => &["ごじゅう"],
+                    0 => &["ごじゅう", "ごじゅっ"],
                     _ => unreachable!(),
                 }
             }
@@ -122,7 +122,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                     3 => &["ろくまん"],
                     2 => &["ろくせん"],
                     1 => &["ろっぴゃく"],
-                    0 => &["ろくじゅう"],
+                    0 => &["ろくじゅう", "ろくじゅっ"],
                     _ => unreachable!(),
                 }
             }
@@ -137,7 +137,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                     3 => &["しちまん", "ななまん"],
                     2 => &["しちせん", "ななせん"],
                     1 => &["しちひゃく", "ななひゃく"],
-                    0 => &["しちじゅう", "ななじゅう"],
+                    0 => &["しちじゅう", "ななじゅう", "しちじゅっ", "ななじゅっ"],
                     _ => unreachable!(),
                 }
             }
@@ -150,7 +150,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                     3 => &["はちまん"],
                     2 => &["はっせん"],
                     1 => &["はっぴゃく"],
-                    0 => &["はちじゅう"],
+                    0 => &["はちじゅう", "はちじゅっ"],
                     _ => unreachable!(),
                 }
             }
@@ -163,7 +163,7 @@ pub fn digit_readings(digit: char, numbers_left: usize) -> &'static [&'static st
                     3 => &["きゅうまん"],
                     2 => &["きゅうせん"],
                     1 => &["きゅうひゃく"],
-                    0 => &["きゅうじゅう"],
+                    0 => &["きゅうじゅう", "きゅうじゅっ"],
                     _ => unreachable!(),
                 }
             }
