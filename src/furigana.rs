@@ -7,7 +7,7 @@ pub struct Furigana<'a> {
     /// The original word with furigana.
     pub furigana: Vec<FuriganaSegment<'a>>,
     /// A rough relative measure of this mapping's accuracy, the higher the more accurate.
-    /// Only meaningful in comparison with other configurations for the same word.
+    /// Only meaningful in comparison with other mappings from the same `map` call.
     pub accuracy: i32,
 }
 

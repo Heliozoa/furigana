@@ -5,7 +5,7 @@
 [![Crates.io](https://img.shields.io/crates/l/furigana)](https://choosealicense.com/licenses/mpl-2.0/)
 [![GitHub](https://img.shields.io/badge/GitHub-Heliozoa-24292f)](https://github.com/Heliozoa/furigana)
 
-Contains functionality for correctly mapping furigana to a word given a reading, and optionally kanji reading data.
+Contains functionality for correctly mapping furigana to a word given a reading, optionally using kanji reading data.
 
 ## Usage
 
@@ -23,7 +23,7 @@ prints out the following mappings:
 <ruby>物<rt>もの</rt>の<rt></rt>怪<rt>け</rt></ruby>
 </pre>
 
-Only the first reading is actually valid, but based only on a word and its reading there's no way to know that.
+The second mapping is correct one, but based only on a word and its reading there's no way to determine that.
 
 If given information about kanji readings (for example, from [KANJIDIC2](http://www.edrdg.org/kanjidic/)), `furigana::map` is able to grade the potential mappings:
 
@@ -31,14 +31,11 @@ If given information about kanji readings (for example, from [KANJIDIC2](http://
 let mut kanji_to_readings = HashMap::new();
 kanji_to_readings.insert("物".to_string(), vec!["もの".to_string()]);
 kanji_to_readings.insert("怪".to_string(), vec!["け".to_string()]);
-let mapping = furigana::map("物の怪", "もののけ", &kanji_to_readings)
-    .into_iter()
-    .max_by_key(|f| f.accuracy)
-    .unwrap();
+let mapping = furigana::map("物の怪", "もののけ", &kanji_to_readings)[0];
 println!("{mapping}");
 ```
 
-assigns a high accuracy value to the correct reading and a low value to the other one, so that only the correct mapping is printed:
+Here, the incorrect mapping is rejected using the knowledge given about kanji readings, so that only the correct mapping is printed:
 
 <pre>
 <ruby>物<rt>もの</rt>の<rt></rt>怪<rt>け</rt></ruby>
@@ -46,11 +43,11 @@ assigns a high accuracy value to the correct reading and a low value to the othe
 
 ## Notes
 
-- The algorithm used is recursive and not optimised, so it may be inefficient for long, kanji-heavy inputs.
+- The algorithm used is recursive and not optimised, so it may be inefficient for very long inputs and certain edge cases that produce a large amount of potential mappings. When using real data and dividing it into shorter segments (e.g. by word or by sentence) there should be no issue.
 
 - Irregular readings such as おとな for 大人 and とおか １０日 are handled case by case so these may be mapped in correctly in some cases. Issues on these are appreciated.
 
-- If the library fails to produce the correct mapping, or if its accuracy is lower than an incorrect mapping's, an issue is much appreciated!
+- If the library fails to produce the correct mapping, or if its accuracy is lower than that of an incorrect mapping, an issue is much appreciated!
 
 ## License
 

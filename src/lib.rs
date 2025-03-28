@@ -197,6 +197,7 @@ where
             }
             if nodes.is_empty() {
                 // found no valid continuations
+                // todo: try mapping the rest naively
                 None
             } else {
                 Some(nodes)
