@@ -313,19 +313,20 @@ where
             // for all the readings we found, recurse
             let mut nodes = Vec::new();
             for reading in readings {
-                let extensions = map_inner(
+                if let Some(extensions) = map_inner(
                     segments_rest.clone(),
                     &reading_rest[reading.len()..],
                     kanji_to_readings,
                     None,
                     false,
-                )?;
-                nodes.push(FuriganaNode {
-                    segment,
-                    reading: &reading_rest[..reading.len()],
-                    extensions,
-                    kanji_accurate: None,
-                })
+                ) {
+                    nodes.push(FuriganaNode {
+                        segment,
+                        reading: &reading_rest[..reading.len()],
+                        extensions,
+                        kanji_accurate: None,
+                    })
+                }
             }
             if nodes.is_empty() {
                 None
@@ -1056,6 +1057,19 @@ mod test {
         assert_eq!(
             furigana[0],
             (3, vec![("学", Some("がっ")), ("会", Some("かい"))])
+        );
+    }
+
+    #[test]
+    fn regression_4() {
+        let mut kanji_to_readings = HashMap::new();
+        kanji_to_readings.insert("回".to_string(), vec!["カイ".to_string()]);
+
+        let furigana = prepare_furigana(crate::map("4回", "よんかい", &kanji_to_readings));
+        assert_eq!(furigana.len(), 1);
+        assert_eq!(
+            furigana[0],
+            (2, vec![("4", Some("よん")), ("回", Some("かい"))])
         );
     }
 }
