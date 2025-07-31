@@ -1,9 +1,9 @@
 [package]
 name = "furigana"
-version = "0.1.11"
+version = "0.1.12"
 authors = ["Heliozoa <daniel.x.martinez@helsinki.fi>"]
-edition = "2021"
-rust-version = "1.56"
+edition = "2024"
+rust-version = "1.85"
 description = "Map furigana to a word given its reading."
 readme = "README.md"
 repository = "https://github.com/Heliozoa/furigana"

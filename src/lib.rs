@@ -328,15 +328,11 @@ where
                     })
                 }
             }
-            if nodes.is_empty() {
-                None
-            } else {
-                Some(nodes)
-            }
+            if nodes.is_empty() { None } else { Some(nodes) }
         }
         Some(segment @ Segment::Exception(exception)) => match exception {
-            // ヶ is a special case that is always read as か
-            "ヶ" => {
+            // ヶ and ヵ are special cases that are always read as か (hopefully)
+            "ヶ" | "ヵ" => {
                 let corresponding_reading_len = 'か'.len_utf8();
                 let reading = reading_rest.get(..corresponding_reading_len)?;
                 if reading == "か" {
@@ -899,7 +895,12 @@ mod test {
         assert_eq!(
             furigana[0].1,
             vec![
-                ("123456789", Some("いちおくにせんさんびゃくよんじゅうごまんろくせんななひゃくはちじゅうきゅう")),
+                (
+                    "123456789",
+                    Some(
+                        "いちおくにせんさんびゃくよんじゅうごまんろくせんななひゃくはちじゅうきゅう"
+                    )
+                ),
                 ("日", Some("にち"))
             ]
         );
@@ -1070,6 +1071,23 @@ mod test {
         assert_eq!(
             furigana[0],
             (2, vec![("4", Some("よん")), ("回", Some("かい"))])
+        );
+    }
+
+    #[test]
+    fn regression_5() {
+        let furigana = prepare_furigana(crate::map_naive("一ヵ月", "いっかげつ"));
+        assert_eq!(furigana.len(), 1);
+        assert_eq!(
+            furigana[0],
+            (
+                0,
+                vec![
+                    ("一", Some("いっ")),
+                    ("ヵ", Some("か")),
+                    ("月", Some("げつ"))
+                ]
+            )
         );
     }
 }

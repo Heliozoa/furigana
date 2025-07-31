@@ -70,7 +70,7 @@ impl Display for Furigana<'_> {
             write!(f, "{}", segment.segment)?;
             write!(f, "<rt>")?;
             if let Some(furigana) = segment.furigana {
-                write!(f, "{}", furigana)?;
+                write!(f, "{furigana}")?;
             }
             write!(f, "</rt>")?;
         }

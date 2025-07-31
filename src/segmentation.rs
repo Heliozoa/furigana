@@ -226,7 +226,7 @@ enum Char {
 }
 
 fn classify_char(c: char) -> Char {
-    if c == 'ヶ' {
+    if c == 'ヶ' || c == 'ヵ' {
         // ヶ is technically classified as a kanji in unicode
         // but we want to treat it differently
         Char::Exception
